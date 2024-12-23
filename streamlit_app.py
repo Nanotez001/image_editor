@@ -1,5 +1,6 @@
 import streamlit as st
 from PIL import Image
+import pandas as pd
 
 class ImageAnalyzer:
     def __init__(self, image_path, tolerance=10):
@@ -150,6 +151,7 @@ class ImageAnalyzer:
 
 #     result.show()
 #     result.save("C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg")
+platform_product=pd.read_csv("https://raw.github.com/Nanotez001/image_editor/blob/main/Platfrom_Product.csv")
 # ====================================
 def main():
     st.title("IMAGE EDITOR")
@@ -160,12 +162,15 @@ def main():
     # Sidebar widgets
     platfrom = st.sidebar.selectbox("Platfrom:", ["LD", "JJT"])
     type_product = st.sidebar.selectbox("Type:", ["TV", "ตู้เย็น","ไมโครเวฟ"])
-    uploaded_file = st.file_uploader("Upload JPG Files",type=["jpg", "jpeg"],accept_multiple_files=True)
 
+
+    uploaded_file = st.file_uploader("Upload JPG Files",type=["jpg", "jpeg"],accept_multiple_files=True)
+    # st.dataframe(platform_product)
     col1, col2 = st.columns(2)
     # Display the images side by side
     old_imge_url= "https://via.placeholder.com/300x200.png?text=Image+1"
     new_imge_url="https://via.placeholder.com/300x200.png?text=Image+2"
+
     with col1:
         st.image(old_imge_url, caption="Before", use_container_width=True)
 
