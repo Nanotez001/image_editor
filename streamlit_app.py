@@ -120,17 +120,9 @@ class ImageAnalyzer:
     
 
 #     leftmost_x = analyzer.find_leftmost_nonwhite()
-#     # print(f"Leftmost non-white x: {leftmost_x}")
-
 #     uppermost_y = analyzer.find_uppermost_nonwhite()
-#     # print(f"Uppermost non-white y: {uppermost_y}")
-
 #     rightmost_x = analyzer.find_rightmost_nonwhite()
-#     # print(f"Rightmost non-white x: {rightmost_x}")
-
 #     downmost_y = analyzer.find_downmost_nonwhite()
-#     # print(f"Downmost non-white y: {downmost_y}")
-
 #     # print("SIZE",analyzer.image.size)
 
 #     cropped_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Cropped_Test.jpg"
@@ -151,7 +143,8 @@ class ImageAnalyzer:
 
 #     result.show()
 #     result.save("C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg")
-platform_product=pd.read_csv("https://raw.github.com/Nanotez001/image_editor/blob/main/Platfrom_Product.csv")
+pp_df=pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/Platfrom_Product.csv")
+
 # ====================================
 def main():
     st.title("IMAGE EDITOR")
@@ -162,10 +155,10 @@ def main():
     # Sidebar widgets
     platfrom = st.sidebar.selectbox("Platfrom:", ["LD", "JJT"])
     type_product = st.sidebar.selectbox("Type:", ["TV", "ตู้เย็น","ไมโครเวฟ"])
-
+    buffer=pp_df.loc[platfrom,type_product]
 
     uploaded_file = st.file_uploader("Upload JPG Files",type=["jpg", "jpeg"],accept_multiple_files=True)
-    # st.dataframe(platform_product)
+
     col1, col2 = st.columns(2)
     # Display the images side by side
     old_imge_url= "https://via.placeholder.com/300x200.png?text=Image+1"
