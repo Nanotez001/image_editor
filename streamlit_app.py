@@ -154,9 +154,9 @@ def main():
 
     # Sidebar widgets
     platfrom = st.sidebar.selectbox("Platfrom:", ["LD", "JJT"])
-    type_product = st.sidebar.selectbox("Type:", ["TV", "ตู้เย็น","ไมโครเวฟ"])
+    type_product = st.sidebar.selectbox("Type:", ["tv", "refrigerator","microwave","washingmachine"])
     pp_df=pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/Platfrom_Product.csv")
-    buffer=pp_df.loc[platfrom,type_product]
+    # buffer=pp_df.loc[platfrom,type_product]
 
     uploaded_file = st.file_uploader("Upload JPG Files",type=["jpg", "jpeg"],accept_multiple_files=True)
 
