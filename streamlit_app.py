@@ -143,7 +143,7 @@ class ImageAnalyzer:
 
 #     result.show()
 #     result.save("C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg")
-pp_df=pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/Platfrom_Product.csv")
+
 
 # ====================================
 def main():
@@ -155,6 +155,7 @@ def main():
     # Sidebar widgets
     platfrom = st.sidebar.selectbox("Platfrom:", ["LD", "JJT"])
     type_product = st.sidebar.selectbox("Type:", ["TV", "ตู้เย็น","ไมโครเวฟ"])
+    pp_df=pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/Platfrom_Product.csv")
     buffer=pp_df.loc[platfrom,type_product]
 
     uploaded_file = st.file_uploader("Upload JPG Files",type=["jpg", "jpeg"],accept_multiple_files=True)
