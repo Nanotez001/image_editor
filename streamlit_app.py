@@ -3,6 +3,7 @@ from PIL import Image
 import pandas as pd
 import requests
 from io import BytesIO
+import os
 
 class ImageAnalyzer:
     def __init__(self, image_input, tolerance=10):
@@ -237,7 +238,6 @@ def main():
                 # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
                 st.image(result, caption="After", use_container_width=True)
     # save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
-    import os
 
     save_folder_path = st.text_input(label="Enter your FOLDER address:", placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
 
@@ -251,7 +251,7 @@ def main():
 
             i = 0
             for image in result_images:
-                save_path = os.path.join(save_folder_path, original_name[i])
+                save_path = os.path,"\\".join(save_folder_path, original_name[i])
                 st.write(f"Attempting to save image to: {save_path}")  # Log the save path for debugging
                 
                 try:
