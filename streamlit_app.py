@@ -236,14 +236,30 @@ def main():
             with col2:
                 # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
                 st.image(result, caption="After", use_container_width=True)
-    save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
-    if st.button(label = "save"): 
-        i=0
-        for image in result_images:
-            save_path = f"{save_folder_path}/{original_name[i]}"
-            i+=1     
-            # save_path = "C:/Users/LEGION by Lenovo/Desktop/test.jpg"  # Specify the local save path
-            image.save(save_path)
+    # save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
+    import os
+
+    save_folder_path = st.text_input(label="Enter your FOLDER address:", placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
+
+    if st.button(label="save"): 
+        if not save_folder_path:
+            st.error("Please enter a valid folder path.")
+        else:
+            # Check if the directory exists, and create it if not
+            if not os.path.exists(save_folder_path):
+                os.makedirs(save_folder_path)  # Create the directory if it doesn't exist
+
+            i = 0
+            for image in result_images:
+                save_path = os.path.join(save_folder_path, original_name[i])
+                st.write(f"Attempting to save image to: {save_path}")  # Log the save path for debugging
+                
+                try:
+                    image.save(save_path)
+                    st.success(f"Image saved to {save_path}")
+                except Exception as e:
+                    st.error(f"Error saving image: {e}")
+                i += 1
 # Run the app
 if __name__ == "__main__":
     main()
