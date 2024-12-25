@@ -1,13 +1,17 @@
 import streamlit as st
 from PIL import Image
 import pandas as pd
+import requests
+from io import BytesIO
 
 class ImageAnalyzer:
     def __init__(self, image_input, tolerance=10):
         # Check if input is a path or a file-like object
         if isinstance(image_input, str):  # File path
             self.image = Image.open(image_input).convert("RGB")
-        else:  # File-like object
+        elif isinstance(image_input, Image.Image):  # Pillow Image object
+            self.image = image_input.convert("RGB")
+        else:  # File-like object (e.g., BytesIO)
             self.image = Image.open(image_input).convert("RGB")
         
         self.pixels = self.image.load()
@@ -47,8 +51,8 @@ class ImageAnalyzer:
         return -1
 
 
-    def paste_image(self, overlay_image_path, coordinates=(0, 0)):
-        overlay_image = Image.open(overlay_image_path).convert("RGBA")
+    def paste_image(self, overlay_image, coordinates=(0, 0)):
+        overlay_image = overlay_image.convert("RGBA")
         if coordinates[0] + overlay_image.width > self.image.width or coordinates[1] + overlay_image.height > self.image.height:
             raise ValueError("Overlay image goes beyond the base image dimensions.")
         self.image.paste(overlay_image, coordinates, overlay_image)
@@ -115,19 +119,31 @@ class ImageAnalyzer:
         return resized_image
 
 
+def importfromGit(image_url):
+
+    # Send a GET request to fetch the raw image
+    response = requests.get(image_url)
+
+    # Check if the request was successful (status code 200)
+    if response.status_code == 200:
+        # Open the image from the response content
+        img = Image.open(BytesIO(response.content))
+        return img
+    else:
+        return print("Failed to retrieve the image. Status code:", response.status_code)
 
 def Edit_001(main_input, platform, type_product):
     product_input = ImageAnalyzer(main_input)
 
     # Select platform and buffer data
     if platform == "LD":
-        background_input = ImageAnalyzer("C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/temp/Temp_525x338.jpg")
+        background_input = ImageAnalyzer(importfromGit("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/temp/Temp_525x338.jpg"))
         background_size = [525, 338]
-        buffer = pd.read_csv("C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/buffer/LD_buffer.csv")
+        buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/LD_buffer.csv")
     elif platform == "JJT":
-        background_input = ImageAnalyzer("C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/temp/Temp_1000x1000.jpg")
+        background_input = ImageAnalyzer(importfromGit("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/temp/Temp_1000x1000.jpg"))
         background_size = [1000, 1000]
-        buffer = pd.read_csv("C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/buffer/JJT_buffer.csv")
+        buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/JJT_buffer.csv")
 
     # Get non-white pixel boundaries
     leftmost_x = product_input.find_leftmost_nonwhite()
@@ -135,21 +151,27 @@ def Edit_001(main_input, platform, type_product):
     rightmost_x = product_input.find_rightmost_nonwhite()
     downmost_y = product_input.find_downmost_nonwhite()
 
-    # Paths for intermediate files
-    cropped_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Cropped_Test.jpg"
-    resized_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Resized_Test.jpg"
-
+    # st.write("CHECK1")
+    # # Paths for intermediate files
+    # cropped_path = "C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/storage/Cropped_Test.jpg"
+    # resized_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Resized_Test.jpg"
     # Crop and save the image
     cropped_image = product_input.crop(leftmost_x, uppermost_y, rightmost_x, downmost_y)
-    cropped_image.save(cropped_path)
+    # cropped_image.save(cropped_path)
 
+    # st.write("CHECK2")
+    # st.write(buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
+
+    buffer2 = buffer.loc[buffer['product'] == type_product,'buffer2'].values[0]
+    buffer1 = buffer.loc[buffer['product'] == type_product,'buffer1'].values[0] 
     # Resize the cropped image
-    resized_image = ImageAnalyzer(cropped_path).resize_with_aspect_ratio(new_height=buffer.loc[type_product, "buffer2"])
-    resized_image.save(resized_path)
+    resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
+    # resized_image.save(resized_path)
 
+    # st.write("CHECK3")
     # Overlay the resized image onto the background
-    background = ImageAnalyzer(background_input)
-    result = background.paste_image(resized_path, coordinates=((background_size[0] - resized_image.width) // 2, buffer.loc[type_product, "buffer1"]))
+    background = background_input
+    result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
 
     result.save("C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg")
 
@@ -209,18 +231,18 @@ def main():
                 # Call Edit_001 for processing
                 Edit_001(uploaded_file, platform, type_product)
 
-                # Display the before and after images
-                col1, col2 = st.columns(2)
-
-                with col1:
-                    st.image(uploaded_file, caption="Before", use_container_width=True)
-
-                with col2:
-                    result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
-                    st.image(result_image_path, caption="After", use_container_width=True)
             except Exception as e:
                 st.error(f"Error processing the image: {e}")
+        
+        # Display the before and after images
+        col1, col2 = st.columns(2)
 
+        with col1:
+            st.image(uploaded_file, caption="Before", use_container_width=True)
+
+        with col2:
+            result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
+            st.image(result_image_path, caption="After", use_container_width=True)
 # Run the app
 if __name__ == "__main__":
     main()
