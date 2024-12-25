@@ -236,7 +236,7 @@ def main():
             with col2:
                 # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
                 st.image(result, caption="After", use_container_width=True)
-    save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
+    save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
     if st.button(label = "save"): 
         i=0
         for image in result_images:
