@@ -50,6 +50,13 @@ class ImageAnalyzer:
                     return y
         return -1
 
+    def find_rim(self,image_path):
+        a = ImageAnalyzer(image_path)
+        leftmost_x = a.find_leftmost_nonwhite()
+        uppermost_y = a.find_uppermost_nonwhite()
+        rightmost_x = a.find_rightmost_nonwhite()
+        downmost_y = a.find_downmost_nonwhite()
+        st.write(leftmost_x,uppermost_y,rightmost_x,downmost_y)
 
     def paste_image(self, overlay_image, coordinates=(0, 0)):
         overlay_image = overlay_image.convert("RGBA")
@@ -151,7 +158,7 @@ def Edit_001(main_input, platform, type_product):
     rightmost_x = product_input.find_rightmost_nonwhite()
     downmost_y = product_input.find_downmost_nonwhite()
 
-    # st.write("CHECK1")
+    st.write("CHECK1")
     # # Paths for intermediate files
     # cropped_path = "C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/storage/Cropped_Test.jpg"
     # resized_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Resized_Test.jpg"
@@ -159,22 +166,23 @@ def Edit_001(main_input, platform, type_product):
     cropped_image = product_input.crop(leftmost_x, uppermost_y, rightmost_x, downmost_y)
     # cropped_image.save(cropped_path)
 
-    # st.write("CHECK2")
+    st.write("CHECK2")
     # st.write(buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
-
+    st.write(buffer)
     buffer2 = buffer.loc[buffer['product'] == type_product,'buffer2'].values[0]
     buffer1 = buffer.loc[buffer['product'] == type_product,'buffer1'].values[0] 
     # Resize the cropped image
     resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
     # resized_image.save(resized_path)
 
-    # st.write("CHECK3")
+    st.write("CHECK3")
     # Overlay the resized image onto the background
     background = background_input
     result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
-
+    return result
     result.save("C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg")
 
+    
 
 # # Example Usage
 # if __name__ == "__main__":
@@ -229,8 +237,9 @@ def main():
         for uploaded_file in uploaded_files:
             try:
                 # Call Edit_001 for processing
-                Edit_001(uploaded_file, platform, type_product)
-
+                # Edit_001(uploaded_file, platform, type_product)
+                result = Edit_001(uploaded_file, platform, type_product)
+                
             except Exception as e:
                 st.error(f"Error processing the image: {e}")
         
@@ -241,8 +250,9 @@ def main():
             st.image(uploaded_file, caption="Before", use_container_width=True)
 
         with col2:
-            result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
-            st.image(result_image_path, caption="After", use_container_width=True)
+            # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
+            st.image(result, caption="After", use_container_width=True)
+
 # Run the app
 if __name__ == "__main__":
     main()
