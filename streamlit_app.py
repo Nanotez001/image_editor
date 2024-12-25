@@ -139,7 +139,7 @@ def importfromGit(image_url):
     else:
         return print("Failed to retrieve the image. Status code:", response.status_code)
 
-def Edit_001(main_input, platform, type_product):
+def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=None,adv_buffer2=None):
     product_input = ImageAnalyzer(main_input)
 
     # Select platform and buffer data
@@ -158,7 +158,7 @@ def Edit_001(main_input, platform, type_product):
     rightmost_x = product_input.find_rightmost_nonwhite()
     downmost_y = product_input.find_downmost_nonwhite()
 
-    st.write("CHECK1")
+    # st.write("CHECK1")
     # # Paths for intermediate files
     # cropped_path = "C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/storage/Cropped_Test.jpg"
     # resized_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Resized_Test.jpg"
@@ -166,93 +166,84 @@ def Edit_001(main_input, platform, type_product):
     cropped_image = product_input.crop(leftmost_x, uppermost_y, rightmost_x, downmost_y)
     # cropped_image.save(cropped_path)
 
-    st.write("CHECK2")
+    # st.write("CHECK2")
     # st.write(buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
-    st.write(buffer)
-    buffer2 = buffer.loc[buffer['product'] == type_product,'buffer2'].values[0]
-    buffer1 = buffer.loc[buffer['product'] == type_product,'buffer1'].values[0] 
-    # Resize the cropped image
-    resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
-    # resized_image.save(resized_path)
-
-    st.write("CHECK3")
-    # Overlay the resized image onto the background
-    background = background_input
-    result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
-    return result
-    result.save("C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg")
-
-    
-
-# # Example Usage
-# if __name__ == "__main__":
-#     # image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/65qned80tsa.jpeg"
-#     image_path = "D:/Nano_HomeWork/Pic/เครื่องซักผ้า/LG/FV1412S2B/FV1412S2B-01.jpg"
-#     background_525x338 = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Temp_525x338.jpg"  # Replace with your image file path
-#     background_size=[525,338]
-#     analyzer = ImageAnalyzer(image_path)
-
-    
-
-#     leftmost_x = analyzer.find_leftmost_nonwhite()
-#     uppermost_y = analyzer.find_uppermost_nonwhite()
-#     rightmost_x = analyzer.find_rightmost_nonwhite()
-#     downmost_y = analyzer.find_downmost_nonwhite()
-#     # print("SIZE",analyzer.image.size)
-
-#     cropped_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Cropped_Test.jpg"
-#     resized_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Resized_Test.jpg"
-#     background_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Temp_525x338.jpg"
-
-#     # Crop the image and save it
-#     cropped_image = analyzer.crop(leftmost_x, uppermost_y, rightmost_x, downmost_y)
-#     cropped_image.save(cropped_path)
-
-#     # Resize the cropped image and save it
-#     resized_image = ImageAnalyzer(cropped_path).resize_with_aspect_ratio(new_height=254)
-#     resized_image.save(resized_path)
-
-#     # Overlay the resized image onto the background
-#     background = ImageAnalyzer(background_path)
-#     result = background.paste_image(resized_path, coordinates=((background_size[0]-resized_image.width)//2,42))
-
-#     result.show()
-#     result.save("C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg")
-
+    # st.write(buffer)
+    if advanced_setting:
+        buffer1 = adv_buffer1
+        buffer2 = adv_buffer2
+        # Resize the cropped image
+        resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
+        # resized_image.save(resized_path)
+        # st.write("CHECK3")
+        # Overlay the resized image onto the background
+        background = background_input
+        result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
+        return result
+    else:
+        buffer1 = buffer.loc[buffer['product'] == type_product,'buffer1'].values[0] 
+        buffer2 = buffer.loc[buffer['product'] == type_product,'buffer2'].values[0]
+        # Resize the cropped image
+        resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
+        # resized_image.save(resized_path)
+        # st.write("CHECK3")
+        # Overlay the resized image onto the background
+        background = background_input
+        result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
+        return result
 
 # ====================================
 def main():
-    st.title("IMAGE EDITOR")
+    st.title("BATCH IMAGE EDITOR")
 
     # Sidebar components
     st.sidebar.title("Select Options")
     platform = st.sidebar.selectbox("Platform:", ["LD", "JJT"])
     type_product = st.sidebar.selectbox("Type:", ["tv", "refrigerator", "microwave", "washingmachine"])
 
+    adv_buffer1 = None
+    adv_buffer2 = None
+    advanced_setting = st.sidebar.checkbox("Advanced Setting")
+    if advanced_setting:
+        st.write("The switch is ON!")
+        adv_buffer1 = st.sidebar.slider("Img_UpperSpace",min_value=1,max_value=200)
+        adv_buffer2 = st.sidebar.slider("Img_Height",min_value=1,max_value=200)
+# =======================================================================
     # File uploader
     uploaded_files = st.file_uploader("Upload JPG Files", type=["jpg", "jpeg"], accept_multiple_files=True)
 
     if uploaded_files:
         # Process each uploaded file
+        result_images=[]
+        original_name=[]
         for uploaded_file in uploaded_files:
             try:
+                
+                original_name.append(uploaded_file.name)
                 # Call Edit_001 for processing
                 # Edit_001(uploaded_file, platform, type_product)
-                result = Edit_001(uploaded_file, platform, type_product)
-                
+                result = Edit_001(uploaded_file, platform, type_product,advanced_setting,adv_buffer1,adv_buffer2)
+                result_images.append(result)
             except Exception as e:
                 st.error(f"Error processing the image: {e}")
         
-        # Display the before and after images
-        col1, col2 = st.columns(2)
 
-        with col1:
-            st.image(uploaded_file, caption="Before", use_container_width=True)
+            # Display the before and after images
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(uploaded_file, caption="Before", use_container_width=True)
 
-        with col2:
-            # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
-            st.image(result, caption="After", use_container_width=True)
-
+            with col2:
+                # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
+                st.image(result, caption="After", use_container_width=True)
+    save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
+    if st.button(label = "save"): 
+        i=0
+        for image in result_images:
+            save_path = f"{save_folder_path}/{original_name[i]}"
+            i+=1     
+            # save_path = "C:/Users/LEGION by Lenovo/Desktop/test.jpg"  # Specify the local save path
+            image.save(save_path)
 # Run the app
 if __name__ == "__main__":
     main()
