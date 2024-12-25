@@ -168,7 +168,7 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
 
     # st.write("CHECK2")
     # st.write(buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
-    # st.write(buffer)
+    st.write(buffer)
     if advanced_setting:
         buffer1 = adv_buffer1
         buffer2 = adv_buffer2
