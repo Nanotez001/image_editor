@@ -3,12 +3,17 @@ from PIL import Image
 import pandas as pd
 
 class ImageAnalyzer:
-    def __init__(self, image_path, tolerance=10):
-        self.image_path = image_path
-        self.image = Image.open(image_path).convert("RGB")  # Convert image to RGB mode
+    def __init__(self, image_input, tolerance=10):
+        # Check if input is a path or a file-like object
+        if isinstance(image_input, str):  # File path
+            self.image = Image.open(image_input).convert("RGB")
+        else:  # File-like object
+            self.image = Image.open(image_input).convert("RGB")
+        
         self.pixels = self.image.load()
         self.width, self.height = self.image.size
-        self.tolerance = tolerance  # Set the tolerance
+        self.tolerance = tolerance
+
 
     def is_almost_white(self, pixel):
         return all(255 - value <= self.tolerance for value in pixel)
@@ -109,6 +114,46 @@ class ImageAnalyzer:
         resized_image = self.image.resize((new_width, new_height))
         return resized_image
 
+
+
+def Edit_001(main_input, platform, type_product):
+    product_input = ImageAnalyzer(main_input)
+
+    # Select platform and buffer data
+    if platform == "LD":
+        background_input = ImageAnalyzer("C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/temp/Temp_525x338.jpg")
+        background_size = [525, 338]
+        buffer = pd.read_csv("C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/buffer/LD_buffer.csv")
+    elif platform == "JJT":
+        background_input = ImageAnalyzer("C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/temp/Temp_1000x1000.jpg")
+        background_size = [1000, 1000]
+        buffer = pd.read_csv("C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/buffer/JJT_buffer.csv")
+
+    # Get non-white pixel boundaries
+    leftmost_x = product_input.find_leftmost_nonwhite()
+    uppermost_y = product_input.find_uppermost_nonwhite()
+    rightmost_x = product_input.find_rightmost_nonwhite()
+    downmost_y = product_input.find_downmost_nonwhite()
+
+    # Paths for intermediate files
+    cropped_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Cropped_Test.jpg"
+    resized_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Resized_Test.jpg"
+
+    # Crop and save the image
+    cropped_image = product_input.crop(leftmost_x, uppermost_y, rightmost_x, downmost_y)
+    cropped_image.save(cropped_path)
+
+    # Resize the cropped image
+    resized_image = ImageAnalyzer(cropped_path).resize_with_aspect_ratio(new_height=buffer.loc[type_product, "buffer2"])
+    resized_image.save(resized_path)
+
+    # Overlay the resized image onto the background
+    background = ImageAnalyzer(background_input)
+    result = background.paste_image(resized_path, coordinates=((background_size[0] - resized_image.width) // 2, buffer.loc[type_product, "buffer1"]))
+
+    result.save("C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg")
+
+
 # # Example Usage
 # if __name__ == "__main__":
 #     # image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/65qned80tsa.jpeg"
@@ -151,27 +196,30 @@ def main():
 
     # Sidebar components
     st.sidebar.title("Select Options")
+    platform = st.sidebar.selectbox("Platform:", ["LD", "JJT"])
+    type_product = st.sidebar.selectbox("Type:", ["tv", "refrigerator", "microwave", "washingmachine"])
 
-    # Sidebar widgets
-    platfrom = st.sidebar.selectbox("Platfrom:", ["LD", "JJT"])
-    type_product = st.sidebar.selectbox("Type:", ["tv", "refrigerator","microwave","washingmachine"])
-    pp_df=pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/Platfrom_Product.csv")
-    # buffer=pp_df.loc[platfrom,type_product]
+    # File uploader
+    uploaded_files = st.file_uploader("Upload JPG Files", type=["jpg", "jpeg"], accept_multiple_files=True)
 
-    uploaded_file = st.file_uploader("Upload JPG Files",type=["jpg", "jpeg"],accept_multiple_files=True)
+    if uploaded_files:
+        # Process each uploaded file
+        for uploaded_file in uploaded_files:
+            try:
+                # Call Edit_001 for processing
+                Edit_001(uploaded_file, platform, type_product)
 
-    col1, col2 = st.columns(2)
-    # Display the images side by side
-    old_imge_url= "https://via.placeholder.com/300x200.png?text=Image+1"
-    new_imge_url="https://via.placeholder.com/300x200.png?text=Image+2"
+                # Display the before and after images
+                col1, col2 = st.columns(2)
 
-    with col1:
-        st.image(old_imge_url, caption="Before", use_container_width=True)
+                with col1:
+                    st.image(uploaded_file, caption="Before", use_container_width=True)
 
-    with col2:
-        st.image(new_imge_url, caption="After", use_container_width=True)
-
-
+                with col2:
+                    result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
+                    st.image(result_image_path, caption="After", use_container_width=True)
+            except Exception as e:
+                st.error(f"Error processing the image: {e}")
 
 # Run the app
 if __name__ == "__main__":
