@@ -52,13 +52,14 @@ class ImageAnalyzer:
                     return y
         return -1
 
-    def find_rim(self,image_path):
-        a = ImageAnalyzer(image_path)
+    def find_rim(self,image_input):
+        a = ImageAnalyzer(image_input)
         leftmost_x = a.find_leftmost_nonwhite()
         uppermost_y = a.find_uppermost_nonwhite()
         rightmost_x = a.find_rightmost_nonwhite()
         downmost_y = a.find_downmost_nonwhite()
-        st.write(leftmost_x,uppermost_y,rightmost_x,downmost_y)
+        # return leftmost_x
+        return leftmost_x,uppermost_y,rightmost_x,downmost_y
 
     def paste_image(self, overlay_image, coordinates=(0, 0)):
         overlay_image = overlay_image.convert("RGBA")
@@ -207,11 +208,27 @@ def main():
     adv_buffer2 = None
     advanced_setting = st.sidebar.checkbox("Advanced Setting")
     if advanced_setting:
-        st.write("The switch is ON!")
+        # st.write("The switch is ON!")
         adv_buffer1 = st.sidebar.slider("Img_UpperSpace",value=100,min_value=1,max_value=200)
         adv_buffer2 = st.sidebar.slider("Img_Height",value=150,min_value=1,max_value=200)
 
+    st.sidebar.title("Upload Check Files")
+    check_file = st.sidebar.file_uploader("", type=["jpg", "jpeg"], accept_multiple_files=False)
+    if check_file:
+        st.sidebar.image(check_file)
+        a = ImageAnalyzer(check_file)
+        leftmost_x = a.find_leftmost_nonwhite()
+        uppermost_y = a.find_uppermost_nonwhite()
+        rightmost_x = a.find_rightmost_nonwhite()
+        downmost_y = a.find_downmost_nonwhite()
 
+        st.sidebar.write("UPPER SPACE:",uppermost_y)
+        st.sidebar.write("HEIGHT:",downmost_y-uppermost_y)
+        st.sidebar.write(f"UP: {uppermost_y}")
+        st.sidebar.write(f"DOWN: {downmost_y}")
+        st.sidebar.write(f"LEFT: {leftmost_x}")
+        st.sidebar.write(f"RIGHT: {rightmost_x}")
+        
 
 # =======================================================================
     # File uploader
