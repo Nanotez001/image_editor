@@ -208,8 +208,11 @@ def main():
     advanced_setting = st.sidebar.checkbox("Advanced Setting")
     if advanced_setting:
         st.write("The switch is ON!")
-        adv_buffer1 = st.sidebar.slider("Img_UpperSpace",min_value=1,max_value=200)
-        adv_buffer2 = st.sidebar.slider("Img_Height",min_value=1,max_value=200)
+        adv_buffer1 = st.sidebar.slider("Img_UpperSpace",value=100,min_value=1,max_value=200)
+        adv_buffer2 = st.sidebar.slider("Img_Height",value=150,min_value=1,max_value=200)
+
+
+
 # =======================================================================
     # File uploader
     uploaded_files = st.file_uploader("Upload JPG Files (คำแนะนำ แก้ไขชื่อไฟล์ให้เรียบร้อยก่อน)", type=["jpg", "jpeg"], accept_multiple_files=True)
