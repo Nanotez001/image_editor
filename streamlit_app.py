@@ -202,8 +202,13 @@ def main():
     # Sidebar components
     st.sidebar.title("Select Options")
     platform = st.sidebar.selectbox("Platform:", ["LD", "JJT"])
-    type_product = st.sidebar.selectbox("Type:", ["tv", "refrigerator", "microwave", "washingmachine"])
-
+    type_product = st.sidebar.selectbox("Type:", ["tv", "refrigerator", "microwave", "(ฝาหน้า)washingmachine"])
+    if platform == "LD":
+        buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/LD_buffer.csv")
+    elif platform == "JJT":
+        buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/JJT_buffer.csv")
+    st.sidebar.write("Img_UpperSpace:",buffer.loc[buffer['product'] == type_product,'buffer1'].values[0])
+    st.sidebar.write("Img_Height:",buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
     adv_buffer1 = None
     adv_buffer2 = None
     advanced_setting = st.sidebar.checkbox("Advanced Setting")
@@ -224,6 +229,7 @@ def main():
 
         st.sidebar.write("UPPER SPACE:",uppermost_y)
         st.sidebar.write("HEIGHT:",downmost_y-uppermost_y)
+        st.sidebar.write("==================================")
         st.sidebar.write(f"UP: {uppermost_y}")
         st.sidebar.write(f"DOWN: {downmost_y}")
         st.sidebar.write(f"LEFT: {leftmost_x}")
