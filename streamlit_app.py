@@ -3,6 +3,8 @@ from PIL import Image
 import pandas as pd
 import requests
 from io import BytesIO
+import io
+import zipfile
 
 class ImageAnalyzer:
     def __init__(self, image_input, tolerance=10):
@@ -194,7 +196,7 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
 
 # ====================================
 def main():
-    st.title("BATCH IMAGE EDITOR")
+    st.title("Batch IMAGE EDITOR")
 
     # Sidebar components
     st.sidebar.title("Select Options")
@@ -210,40 +212,67 @@ def main():
         adv_buffer2 = st.sidebar.slider("Img_Height",min_value=1,max_value=200)
 # =======================================================================
     # File uploader
-    uploaded_files = st.file_uploader("Upload JPG Files", type=["jpg", "jpeg"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Upload JPG Files (คำแนะนำ แก้ไขชื่อไฟล์ให้เรียบร้อยก่อน)", type=["jpg", "jpeg"], accept_multiple_files=True)
 
-    if uploaded_files:
-        # Process each uploaded file
-        result_images=[]
-        original_name=[]
-        for uploaded_file in uploaded_files:
-            try:
-                
-                original_name.append(uploaded_file.name)
-                # Call Edit_001 for processing
-                # Edit_001(uploaded_file, platform, type_product)
-                result = Edit_001(uploaded_file, platform, type_product,advanced_setting,adv_buffer1,adv_buffer2)
-                result_images.append(result)
-            except Exception as e:
-                st.error(f"Error processing the image: {e}")
+# if uploaded_files:
+    # Process each uploaded file
+    result_images=[]
+    original_name=[]
+    for uploaded_file in uploaded_files:
+        try:
+            
+            original_name.append(uploaded_file.name)
+            # Call Edit_001 for processing
+            # Edit_001(uploaded_file, platform, type_product)
+            result = Edit_001(uploaded_file, platform, type_product,advanced_setting,adv_buffer1,adv_buffer2)
+            
+        except Exception as e:
+            st.error(f"Error processing the image: {e}")
+
+        result_images.append(result)
+        # Display the before and after images
+        col1, col2 = st.columns(2)
+        with col1:
+            st.image(uploaded_file, caption="Before", use_container_width=True)
+
+        with col2:
+            # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
+            st.image(result, caption="After", use_container_width=True)
+    # save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
+    # if st.button(label = "save"): 
+    #     i=0
+    #     for image in result_images:
+    #         save_path = f"{save_folder_path}/{original_name[i]}"
+    #         i+=1     
+    #         image.save(save_path)
+
+        # Download button to download the image
+    if result_images:
+        # Create a BytesIO object for the ZIP file
+        zip_buffer = io.BytesIO()
         
+        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+            for i, image in enumerate(result_images):
+                img_bytes = io.BytesIO()
+                image.save(img_bytes, format="JPEG")
+                img_bytes.seek(0)
+                if platform == "LD":
+                    zip_file.writestr(f"{original_name[i]}_LuckyDigital.jpg", img_bytes.read())
+                elif platform == "JJT":
+                    zip_file.writestr(f"{original_name[i]}_Jingjungto.jpg", img_bytes.read())
 
-            # Display the before and after images
-            col1, col2 = st.columns(2)
-            with col1:
-                st.image(uploaded_file, caption="Before", use_container_width=True)
+        zip_buffer.seek(0)
+        
+        # Add a single download button for all images as a ZIP file
+        st.download_button(
+            label="Download All Images as ZIP",
+            data=zip_buffer,
+            file_name="Result_Images.zip",
+            mime="application/zip",
+        )
+    else:
+        st.info("Please upload at least one image to proceed.")
 
-            with col2:
-                # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
-                st.image(result, caption="After", use_container_width=True)
-    save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
-    if st.button(label = "save"): 
-        i=0
-        for image in result_images:
-            save_path = f"{save_folder_path}/{original_name[i]}"
-            i+=1     
-            # save_path = "C:/Users/LEGION by Lenovo/Desktop/test.jpg"  # Specify the local save path
-            image.save(save_path)
 # Run the app
 if __name__ == "__main__":
     main()
