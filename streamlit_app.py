@@ -197,7 +197,7 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
 
 # ====================================
 def main():
-    st.title("Batch IMAGE EDITOR v1.2")
+    st.title("Batch IMAGE EDITOR v1.3")
 
     # Sidebar components
     st.sidebar.title("Select Options")
@@ -214,8 +214,8 @@ def main():
     advanced_setting = st.sidebar.checkbox("Advanced Setting")
     if advanced_setting:
         # st.write("The switch is ON!")
-        adv_buffer1 = st.sidebar.slider("Img_UpperSpace",value=100,min_value=1,max_value=200)
-        adv_buffer2 = st.sidebar.slider("Img_Height",value=150,min_value=1,max_value=200)
+        adv_buffer1 = st.sidebar.slider("Img_UpperSpace",value=100,min_value=1,max_value=500)
+        adv_buffer2 = st.sidebar.slider("Img_Height",value=150,min_value=1,max_value=900)
 
     st.sidebar.title("Upload Check Files")
     check_file = st.sidebar.file_uploader("", type=["jpg", "jpeg"], accept_multiple_files=False)
