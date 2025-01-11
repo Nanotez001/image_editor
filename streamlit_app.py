@@ -24,6 +24,9 @@ class ImageAnalyzer:
     def is_almost_white(self, pixel):
         return all(255 - value <= self.tolerance for value in pixel)
 
+    def is_almost_black(self, pixel):
+        return all(value <= self.tolerance for value in pixel)
+
     def find_leftmost_nonwhite(self):
         for x in range(self.width):
             for y in range(self.height):
@@ -51,7 +54,35 @@ class ImageAnalyzer:
                 if not self.is_almost_white(self.pixels[x, y]):  # Check using the tolerance
                     return y
         return -1
+    # ==================================
+    # def find_leftmost_nonblack(self):
+    #     for x in range(self.width):
+    #         for y in range(self.height):
+    #               if not self.is_almost_black(self.pixels[x, y]):
+    #                 return x
+    #     return -1
 
+    # def find_uppermost_nonblack(self):
+    #     for y in range(self.height):
+    #         for x in range(self.width):
+    #             if not self.is_almost_black(self.pixels[x, y]):  # Check using the tolerance
+    #                 return y
+    #     return -1
+
+    # def find_rightmost_nonblack(self):
+    #     for x in range(self.width - 1, -1, -1):
+    #         for y in range(self.height):
+    #             if not self.is_almost_black(self.pixels[x, y]):  # Check using the tolerance
+    #                 return x
+    #     return -1
+
+    # def find_downmost_nonblack(self):
+    #     for y in range(self.height - 1, -1, -1):
+    #         for x in range(self.width):
+    #             if not self.is_almost_black(self.pixels[x, y]):  # Check using the tolerance
+    #                 return y
+    #     return -1
+    # ==================================
     def find_rim(self,image_input):
         a = ImageAnalyzer(image_input)
         leftmost_x = a.find_leftmost_nonwhite()
@@ -197,7 +228,7 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
 
 # ====================================
 def main():
-    st.title("Batch IMAGE EDITOR v1.3")
+    st.title("Batch IMAGE EDITOR v1.4")
 
     # Sidebar components
     st.sidebar.title("Select Options")
@@ -246,20 +277,32 @@ def main():
     original_name=[]
     for uploaded_file in uploaded_files:
         try:
-            
+            # Save the original file name
             original_name.append(uploaded_file.name)
-            # Call Edit_001 for processing
-            # Edit_001(uploaded_file, platform, type_product)
-            result = Edit_001(uploaded_file, platform, type_product,advanced_setting,adv_buffer1,adv_buffer2)
-            
-        except Exception as e:
-            st.error(f"Error processing the image: {e}")
 
-        result_images.append(result)
+            # Open and convert the uploaded image
+            png_image = Image.open(uploaded_file).convert("RGBA")
+
+            # Create a white background image
+            white_background = Image.new("RGB", png_image.size, (255, 255, 255))
+
+            # Combine the PNG with the white background (handle transparency)
+            white_background.paste(png_image, mask=png_image.split()[3])
+
+            # Process the result
+            result = Edit_001(white_background, platform, type_product, advanced_setting, adv_buffer1, adv_buffer2)
+
+            # Append the result to the results list
+            result_images.append(result)
+
+        except Exception as e:
+            st.error(f"Error processing the image '{uploaded_file.name}': {e}")
+
+            # result_images.append(result)
         # Display the before and after images
         col1, col2 = st.columns(2)
         with col1:
-            st.image(uploaded_file, caption="Before", use_container_width=True)
+            st.image(white_background, caption="Before", use_container_width=True)
 
         with col2:
             # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
