@@ -238,7 +238,7 @@ def main():
 
 # =======================================================================
     # File uploader
-    uploaded_files = st.file_uploader("Upload JPG Files (คำแนะนำ แก้ไขชื่อไฟล์ให้เรียบร้อยก่อน)", type=["jpg", "jpeg"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Upload JPG Files (คำแนะนำ แก้ไขชื่อไฟล์ให้เรียบร้อยก่อน)", type=["jpg", "jpeg","png"], accept_multiple_files=True)
 
 # if uploaded_files:
     # Process each uploaded file
