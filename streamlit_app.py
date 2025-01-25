@@ -325,6 +325,8 @@ def main():
                 img_bytes = io.BytesIO()
                 image.save(img_bytes, format="JPEG")
                 img_bytes.seek(0)
+                original_name[i] = original_name[i].split(".")[0]
+                
                 if platform == "LD":
                     zip_file.writestr(f"{original_name[i]}_LuckyDigital.jpg", img_bytes.read())
                 elif platform == "JJT":
