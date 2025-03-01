@@ -315,20 +315,20 @@ def main():
         #         i+=1     
         #         image.save(save_path)
 
-            # Download button to download the image
-        if result_images:
-            # Create a BytesIO object for the ZIP file
-            zip_buffer = io.BytesIO()
-            
-            with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-                for i, image in enumerate(result_images):
-                    img_bytes = io.BytesIO()
-                    image.save(img_bytes, format="JPEG")
-                    img_bytes.seek(0)
-                    if platform == "LD":
-                        zip_file.writestr(f"{original_name[i]}_LuckyDigital.jpg", img_bytes.read())
-                    elif platform == "JJT":
-                        zip_file.writestr(f"{original_name[i]}_Jingjungto.jpg", img_bytes.read())
+        # Download button to download the image
+    if result_images:
+        # Create a BytesIO object for the ZIP file
+        zip_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+            for i, image in enumerate(result_images):
+                img_bytes = io.BytesIO()
+                image.save(img_bytes, format="JPEG")
+                img_bytes.seek(0)
+                if platform == "LD":
+                    zip_file.writestr(f"{original_name[i]}_LuckyDigital.jpg", img_bytes.read())
+                elif platform == "JJT":
+                    zip_file.writestr(f"{original_name[i]}_Jingjungto.jpg", img_bytes.read())
 
             zip_buffer.seek(0)
             
