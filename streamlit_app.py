@@ -307,8 +307,7 @@ def main():
             with col2:
                 # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
                 st.image(result, caption="After", use_container_width=True)
-    else:
-        st.warning("Upload aat least one image")
+
         # save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
         # if st.button(label = "save"): 
         #     i=0
@@ -318,29 +317,29 @@ def main():
         #         image.save(save_path)
 
         # Download button to download the image
-    if result_images:
-        # Create a BytesIO object for the ZIP file
-        zip_buffer = io.BytesIO()
-        
-        with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-            for i, image in enumerate(result_images):
-                img_bytes = io.BytesIO()
-                image.save(img_bytes, format="JPEG")
-                img_bytes.seek(0)
-                if platform == "LD":
-                    zip_file.writestr(f"{original_name[i]}_LuckyDigital.jpg", img_bytes.read())
-                elif platform == "JJT":
-                    zip_file.writestr(f"{original_name[i]}_Jingjungto.jpg", img_bytes.read())
-
-            zip_buffer.seek(0)
+        if result_images:
+            # Create a BytesIO object for the ZIP file
+            zip_buffer = io.BytesIO()
             
-            # Add a single download button for all images as a ZIP file
-            st.download_button(
-                label="Download All Images as ZIP",
-                data=zip_buffer,
-                file_name="Result_Images.zip",
-                mime="application/zip",
-            )
+            with zipfile.ZipFile(zip_buffer, "w") as zip_file:
+                for i, image in enumerate(result_images):
+                    img_bytes = io.BytesIO()
+                    image.save(img_bytes, format="JPEG")
+                    img_bytes.seek(0)
+                    if platform == "LD":
+                        zip_file.writestr(f"{original_name[i]}_LuckyDigital.jpg", img_bytes.read())
+                    elif platform == "JJT":
+                        zip_file.writestr(f"{original_name[i]}_Jingjungto.jpg", img_bytes.read())
+
+                zip_buffer.seek(0)
+                
+                # Add a single download button for all images as a ZIP file
+                st.download_button(
+                    label="Download All Images as ZIP",
+                    data=zip_buffer,
+                    file_name="Result_Images.zip",
+                    mime="application/zip",
+                )
     else:
         st.info("Please upload at least one image to proceed.")
 
