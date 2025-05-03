@@ -325,9 +325,13 @@ def main():
             
             with zipfile.ZipFile(zip_buffer, "w") as zip_file:
                 for i, image in enumerate(result_images):
-                    img_bytes = io.BytesIO()
-                    image.save(img_bytes, format="JPEG")
-                    img_bytes.seek(0)
+                    try:
+                        img_bytes = io.BytesIO()
+                        image.save(img_bytes, format="JPEG")
+                        img_bytes.seek(0)
+                    except Exception as e:
+                        st.error(f"Error saving image {original_name[i]}: {e}")
+                        continue  # Skip corrupted image
                     if platform == "LD":
                         zip_file.writestr(f"{original_name[i]}_LuckyDigital.jpg", img_bytes.read())
                     elif platform == "JJT":
