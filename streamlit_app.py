@@ -278,7 +278,7 @@ def main():
         for uploaded_file in uploaded_files:
             try:
                 # Save the original file name
-                name_without_ext = uploaded_file.name.replace('.jpg', '').replace('.png', '')
+                name_without_ext = uploaded_file.name.replace('.jpg', '').replace('.png', '').replace('.jpeg', '')
                 original_name.append(name_without_ext)
                 # original_name.append(uploaded_file.name)
 
