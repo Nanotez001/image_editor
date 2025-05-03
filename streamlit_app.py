@@ -337,7 +337,7 @@ def main():
                     elif platform == "JJT":
                         zip_file.writestr(f"{original_name[i]}_Jingjungto.jpg", img_bytes.read())
 
-                zip_buffer.seek(0)
+            zip_buffer.seek(0)
                 
                 # Add a single download button for all images as a ZIP file
                 st.download_button(
