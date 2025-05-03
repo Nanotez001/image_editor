@@ -278,7 +278,9 @@ def main():
         for uploaded_file in uploaded_files:
             try:
                 # Save the original file name
-                original_name.append(uploaded_file.name)
+                name_without_ext = os.path.splitext(uploaded_file.name)[0]
+                original_name.append(name_without_ext)
+                # original_name.append(uploaded_file.name)
 
                 # Open and convert the uploaded image
                 png_image = Image.open(uploaded_file).convert("RGBA")
