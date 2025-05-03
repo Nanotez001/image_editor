@@ -339,12 +339,12 @@ def main():
 
             zip_buffer.seek(0)
                 
-                # Add a single download button for all images as a ZIP file
-                st.download_button(
-                    label="Download All Images as ZIP",
-                    data=zip_buffer,
-                    file_name="Result_Images.zip",
-                    mime="application/zip",
+            # Add a single download button for all images as a ZIP file
+            st.download_button(
+                label="Download All Images as ZIP",
+                data=zip_buffer,
+                file_name="Result_Images.zip",
+                mime="application/zip",
                 )
     else:
         st.info("Please upload at least one image to proceed.")
