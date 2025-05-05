@@ -228,7 +228,7 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
 
 # ====================================
 def main():
-    st.title("Batch IMAGE EDITOR v1.4")
+    st.title("Batch IMAGE EDITOR v1.41")
 
     # Sidebar components
     st.sidebar.title("Select Options")
@@ -275,7 +275,7 @@ def main():
         # Process each uploaded file
         result_images=[]
         original_name=[]
-        for uploaded_file in uploaded_files:
+        for i, uploaded_file in enumerate(uploaded_files):
             try:
                 # Save the original file name
                 name_without_ext = uploaded_file.name.replace('.jpg', '').replace('.png', '').replace('.jpeg', '')
@@ -302,13 +302,34 @@ def main():
 
                 # result_images.append(result)
             # Display the before and after images
-            col1, col2 = st.columns(2)
+            col1, col2,col3 = st.columns(3)
             with col1:
                 st.image(white_background, caption="Before", use_container_width=True)
 
             with col2:
                 # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
                 st.image(result, caption="After", use_container_width=True)
+            with col3:
+                # Save result as JPEG to in-memory buffer
+                img_bytes = io.BytesIO()
+                result.save(img_bytes, format="JPEG")
+                
+
+                if platform == "LD":
+                    platform_fullname = "LuckyDigital"
+                elif platform == "JJT":
+                    platform_fullname = "Jingjungto"
+                img_bytes.seek(0)
+                # Download button for the individual image
+                st.download_button(
+                    label=f"Download_{i + 1}",
+                    data=img_bytes,
+                    file_name=f"{name_without_ext}_{platform_fullname}_{i+1}.jpg",
+                    mime="image/jpeg"
+    )
+    
+
+
 
         # save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
         # if st.button(label = "save"): 
@@ -341,7 +362,7 @@ def main():
                 
             # Add a single download button for all images as a ZIP file
             st.download_button(
-                label="Download All Images as ZIP",
+                label="Download ALL Images as ZIP",
                 data=zip_buffer,
                 file_name="Result_Images.zip",
                 mime="application/zip",
