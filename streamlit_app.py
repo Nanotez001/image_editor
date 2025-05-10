@@ -5,6 +5,7 @@ import requests
 from io import BytesIO
 import io
 import zipfile
+import re
 
 class ImageAnalyzer:
     def __init__(self, image_input, tolerance=10):
@@ -277,10 +278,16 @@ def main():
         original_name=[]
         for i, uploaded_file in enumerate(uploaded_files):
             try:
-                # Save the original file name
+                # Remove file extension
                 name_without_ext = uploaded_file.name.replace('.jpg', '').replace('.png', '').replace('.jpeg', '')
-                original_name.append(name_without_ext)
-                # original_name.append(uploaded_file.name)
+
+                # Remove any (number) patterns
+                name_cleaned = re.sub(r'\(\d+\)', '', name_without_ext)
+
+                # Optional: Strip leading/trailing spaces
+                name_cleaned = name_cleaned.strip()
+
+                original_name.append(name_cleaned)
 
                 # Open and convert the uploaded image
                 png_image = Image.open(uploaded_file).convert("RGBA")
@@ -314,7 +321,6 @@ def main():
                 img_bytes = io.BytesIO()
                 result.save(img_bytes, format="JPEG")
                 
-
                 if platform == "LD":
                     platform_fullname = "LuckyDigital"
                 elif platform == "JJT":
@@ -322,9 +328,9 @@ def main():
                 img_bytes.seek(0)
                 # Download button for the individual image
                 st.download_button(
-                    label=f"Download_{i + 1}",
+                    label=f"Download",
                     data=img_bytes,
-                    file_name=f"{name_without_ext}_{platform_fullname}_{i+1}.jpg",
+                    file_name=f"{name_cleaned}_{platform_fullname}_{i+1}.jpg",
                     mime="image/jpeg"
     )
     
