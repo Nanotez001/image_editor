@@ -279,7 +279,7 @@ def main():
         for i, uploaded_file in enumerate(uploaded_files):
             try:
                 # Remove file extension
-                name_without_ext = uploaded_file.name.replace('.jpg', '').replace('.png', '').replace('.jpeg', '')
+                name_without_ext = uploaded_file.name.replace('.jpg', '').replace('.png', '').replace('.jpeg', '').replace("LuckyDigital",'').replace("Jingjungto",'')
 
                 # Remove any (number) patterns
                 name_cleaned = re.sub(r'\(\d+\)', '', name_without_ext)
