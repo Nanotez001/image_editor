@@ -249,7 +249,7 @@ def main():
         adv_buffer1 = st.sidebar.slider("Img_UpperSpace",value=100,min_value=1,max_value=500)
         adv_buffer2 = st.sidebar.slider("Img_Height",value=150,min_value=1,max_value=900)
 
-    st.sidebar.title("Upload Check Files")
+    st.sidebar.title("Upload Ref Files")
     check_file = st.sidebar.file_uploader("", type=["jpg", "jpeg","png"], accept_multiple_files=False)
     if check_file:
         st.sidebar.image(check_file)
