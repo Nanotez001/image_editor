@@ -249,27 +249,28 @@ def main():
         adv_buffer1 = st.sidebar.slider("Img_UpperSpace",value=100,min_value=1,max_value=500)
         adv_buffer2 = st.sidebar.slider("Img_Height",value=150,min_value=1,max_value=900)
 
-    # st.sidebar.title("Upload Check Files")
-    # check_file = st.sidebar.file_uploader("", type=["jpg", "jpeg"], accept_multiple_files=False)
-    # if check_file:
-    #     st.sidebar.image(check_file)
-    #     a = ImageAnalyzer(check_file)
-    #     leftmost_x = a.find_leftmost_nonwhite()
-    #     uppermost_y = a.find_uppermost_nonwhite()
-    #     rightmost_x = a.find_rightmost_nonwhite()
-    #     downmost_y = a.find_downmost_nonwhite()
+    st.sidebar.title("Upload Check Files")
+    check_file = st.sidebar.file_uploader("", type=["jpg", "jpeg"], accept_multiple_files=False)
+    if check_file:
+        st.sidebar.image(check_file)
+        a = ImageAnalyzer(check_file)
+        
+        uppermost_y = a.find_uppermost_nonwhite() 
+        downmost_y = a.find_downmost_nonwhite()
+        # rightmost_x = a.find_rightmost_nonwhite()
+        # leftmost_x = a.find_leftmost_nonwhite()
 
-    #     st.sidebar.write("UPPER SPACE:",uppermost_y)
-    #     st.sidebar.write("HEIGHT:",downmost_y-uppermost_y)
-    #     st.sidebar.write("==================================")
-    #     st.sidebar.write(f"UP: {uppermost_y}")
-    #     st.sidebar.write(f"DOWN: {downmost_y}")
-    #     st.sidebar.write(f"LEFT: {leftmost_x}")
-    #     st.sidebar.write(f"RIGHT: {rightmost_x}")
+        st.sidebar.write("UPPER SPACE:",uppermost_y)
+        st.sidebar.write("HEIGHT:",downmost_y-uppermost_y)
+        st.sidebar.write("==================================")
+        st.sidebar.write(f"UP: {uppermost_y}")
+        st.sidebar.write(f"DOWN: {downmost_y}")
+        # st.sidebar.write(f"LEFT: {leftmost_x}")
+        # st.sidebar.write(f"RIGHT: {rightmost_x}")
         
 
 # =======================================================================
-    # File uploader
+    # Main Columns
     uploaded_files = st.file_uploader("Upload JPG Files (คำแนะนำ แก้ไขชื่อไฟล์ให้เรียบร้อยก่อน)", type=["jpg", "jpeg","png"], accept_multiple_files=True)
 
     if uploaded_files:
