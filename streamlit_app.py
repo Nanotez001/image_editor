@@ -229,7 +229,7 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
 
 # ====================================
 def main():
-    st.title("Batch IMAGE EDITOR v1.42")
+    st.title("Batch IMAGE EDITOR v1.43")
 
     # Sidebar components
     st.sidebar.title("Select Options")
@@ -250,7 +250,7 @@ def main():
         adv_buffer2 = st.sidebar.slider("Img_Height",value=150,min_value=1,max_value=900)
 
     st.sidebar.title("Upload Ref Files")
-    check_file = st.sidebar.file_uploader("", type=["jpg", "jpeg","png"], accept_multiple_files=False)
+    check_file = st.sidebar.file_uploader("ใช้เพื่อดู Layout เท่านั้น ไม่ได้ปรับขนาด", type=["jpg", "jpeg","png"], accept_multiple_files=False)
     if check_file:
         st.sidebar.image(check_file)
         a = ImageAnalyzer(check_file)
@@ -263,8 +263,8 @@ def main():
         st.sidebar.write("UPPER SPACE:",uppermost_y)
         st.sidebar.write("HEIGHT:",downmost_y-uppermost_y)
         st.sidebar.write("==================================")
-        st.sidebar.write(f"UP: {uppermost_y}")
-        st.sidebar.write(f"DOWN: {downmost_y}")
+        # st.sidebar.write(f"UP: {uppermost_y}")
+        # st.sidebar.write(f"DOWN: {downmost_y}")
         # st.sidebar.write(f"LEFT: {leftmost_x}")
         # st.sidebar.write(f"RIGHT: {rightmost_x}")
         
