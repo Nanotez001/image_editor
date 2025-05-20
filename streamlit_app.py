@@ -250,7 +250,7 @@ def main():
         adv_buffer2 = st.sidebar.slider("Img_Height",value=150,min_value=1,max_value=900)
 
     st.sidebar.title("Upload Check Files")
-    check_file = st.sidebar.file_uploader("", type=["jpg", "jpeg"], accept_multiple_files=False)
+    check_file = st.sidebar.file_uploader("", type=["jpg", "jpeg","png"], accept_multiple_files=False)
     if check_file:
         st.sidebar.image(check_file)
         a = ImageAnalyzer(check_file)
