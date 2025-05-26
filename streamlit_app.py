@@ -218,29 +218,38 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
     else:
         buffer1 = buffer.loc[buffer['product'] == type_product,'buffer1'].values[0] 
         buffer2 = buffer.loc[buffer['product'] == type_product,'buffer2'].values[0]
+        x_init = buffer.loc[buffer['product'] == type_product,'x_init'].values[0]
+        width_img = buffer.loc[buffer['product'] == type_product,'width_img'].values[0]
         # Resize the cropped image
-        resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
-        # resized_image.save(resized_path)
-        # st.write("CHECK3")
-        # Overlay the resized image onto the background
-        background = background_input
-        result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
+        if type_product == "soundbar":
+            resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_width = int(width_img))
+            background = background_input
+            result = background.paste_image(resized_image, coordinates=((int(x_init),(background_size[1] - resized_image.height) // 2)))
+        else:
+            resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
+            background = background_input
+            result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
         return result
 
 # ====================================
 def main():
     st.title("Batch IMAGE EDITOR v1.43")
+    
 
     # Sidebar components
     st.sidebar.title("Select Options")
     platform = st.sidebar.selectbox("Platform:", ["LD", "JJT"])
-    type_product = st.sidebar.selectbox("Type:", ["tv", "refrigerator", "microwave", "(ฝาหน้า)washingmachine"])
+    type_product = st.sidebar.selectbox("Type:", ["tv", "refrigerator", "microwave", "(ฝาหน้า)washingmachine","soundbar"])
     if platform == "LD":
         buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/LD_buffer.csv")
     elif platform == "JJT":
         buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/JJT_buffer.csv")
+    # st.write(buffer.columns)
     st.sidebar.write("Img_UpperSpace:",buffer.loc[buffer['product'] == type_product,'buffer1'].values[0])
     st.sidebar.write("Img_Height:",buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
+    st.sidebar.write("Img_LeftSpace:",buffer.loc[buffer['product'] == type_product,'x_init'].values[0])
+    st.sidebar.write("Img_Width:",buffer.loc[buffer['product'] == type_product,'width_img'].values[0])
+
     adv_buffer1 = None
     adv_buffer2 = None
     advanced_setting = st.sidebar.checkbox("Advanced Setting & Ref Check")
