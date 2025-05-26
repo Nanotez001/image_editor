@@ -205,26 +205,26 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
     # st.write(buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
     # st.write(buffer)
     if advanced_setting:
-        init_y = adv_buffer1
-        height_img = adv_buffer2
+        buffer1 = adv_buffer1
+        buffer2 = adv_buffer2
         # Resize the cropped image
-        resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(height_img))
+        resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
         # resized_image.save(resized_path)
         # st.write("CHECK3")
         # Overlay the resized image onto the background
         background = background_input
-        result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(init_y)))
+        result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
         return result
     else:
-        init_y = buffer.loc[buffer['product'] == type_product,'init_y'].values[0] 
-        height_img = buffer.loc[buffer['product'] == type_product,'height_img'].values[0]
+        buffer1 = buffer.loc[buffer['product'] == type_product,'buffer1'].values[0] 
+        buffer2 = buffer.loc[buffer['product'] == type_product,'buffer2'].values[0]
         # Resize the cropped image
-        resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(height_img))
+        resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
         # resized_image.save(resized_path)
         # st.write("CHECK3")
         # Overlay the resized image onto the background
         background = background_input
-        result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(init_y)))
+        result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
         return result
 
 # ====================================
@@ -239,8 +239,8 @@ def main():
         buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/LD_buffer.csv")
     elif platform == "JJT":
         buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/JJT_buffer.csv")
-    st.sidebar.write("Img_UpperSpace:",buffer.loc[buffer['product'] == type_product,'init_y'].values[0])
-    st.sidebar.write("Img_Height:",buffer.loc[buffer['product'] == type_product,'height_img'].values[0])
+    st.sidebar.write("Img_UpperSpace:",buffer.loc[buffer['product'] == type_product,'buffer1'].values[0])
+    st.sidebar.write("Img_Height:",buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
     adv_buffer1 = None
     adv_buffer2 = None
     advanced_setting = st.sidebar.checkbox("Advanced Setting & Ref Check")
