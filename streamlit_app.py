@@ -272,25 +272,16 @@ def main():
             
             uppermost_y = a.find_uppermost_nonwhite() 
             downmost_y = a.find_downmost_nonwhite()
-            # rightmost_x = a.find_rightmost_nonwhite()
-            # leftmost_x = a.find_leftmost_nonwhite()
+            rightmost_x = a.find_rightmost_nonwhite()
+            leftmost_x = a.find_leftmost_nonwhite()
 
-<<<<<<< HEAD
             st.sidebar.write("UPPER SPACE: ",uppermost_y)
             st.sidebar.write("HEIGHT: ",downmost_y-uppermost_y)
             st.sidebar.write("LEFT SPACE: " ,leftmost_x)
             st.sidebar.write("RIGHT: " ,rightmost_x)
-=======
-            st.sidebar.write("UPPER SPACE:",uppermost_y)
-            st.sidebar.write("HEIGHT:",downmost_y-uppermost_y)
->>>>>>> parent of 1b70ab6 (Update streamlit_app.py)
             st.sidebar.write("==================================")
-            # st.sidebar.write(f"UP: {uppermost_y}")
-            # st.sidebar.write(f"DOWN: {downmost_y}")
-            # st.sidebar.write(f"LEFT: {leftmost_x}")
-            # st.sidebar.write(f"RIGHT: {rightmost_x}")
-        
 
+            
 # =======================================================================
     # Main Columns
     uploaded_files = st.file_uploader("Upload JPG Files (คำแนะนำ แก้ไขชื่อไฟล์ให้เรียบร้อยก่อน)", type=["jpg", "jpeg","png"], accept_multiple_files=True)
