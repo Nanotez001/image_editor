@@ -160,6 +160,10 @@ class ImageAnalyzer:
         resized_image = self.image.resize((new_width, new_height))
         return resized_image
 
+    def thumbnail(self, coordinate):
+        self.image.thumbnail(coordinate)
+        return self.image
+
 
 def importfromGit(image_url):
 
@@ -193,13 +197,8 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
     rightmost_x = product_input.find_rightmost_nonwhite()
     downmost_y = product_input.find_downmost_nonwhite()
 
-    # st.write("CHECK1")
-    # # Paths for intermediate files
-    # cropped_path = "C:/Users/LEGION by Lenovo/Documents/GitHub/image_editor/asset/storage/Cropped_Test.jpg"
-    # resized_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Resized_Test.jpg"
     # Crop and save the image
     cropped_image = product_input.crop(leftmost_x, uppermost_y, rightmost_x, downmost_y)
-    # cropped_image.save(cropped_path)
 
     # st.write("CHECK2")
     # st.write(buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
@@ -208,12 +207,12 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
         buffer1 = adv_buffer1
         buffer2 = adv_buffer2
         # Resize the cropped image
-        resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
+        cropped_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
         # resized_image.save(resized_path)
         # st.write("CHECK3")
         # Overlay the resized image onto the background
         background = background_input
-        result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
+        result = background.paste_image(cropped_image, coordinates=((background_size[0] - cropped_image.width) // 2,int(buffer1)))
         return result
     else:
         buffer1 = buffer.loc[buffer['product'] == type_product,'buffer1'].values[0] 
@@ -222,13 +221,20 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
         width_img = buffer.loc[buffer['product'] == type_product,'width_img'].values[0]
         # Resize the cropped image
         if type_product == "soundbar":
-            resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_width = int(width_img))
+            cropped_image = ImageAnalyzer(cropped_image)
             background = background_input
-            result = background.paste_image(resized_image, coordinates=((int(x_init),(background_size[1] - resized_image.height) // 2)))
+             # Check if resized_image is larger than background
+            if cropped_image.width > background.width or cropped_image.height > background.height:
+            
+                resize_image = cropped_image.thumbnail((479, 292))
+                result = background.paste_image(resize_image, coordinates=(((background_size[0] - resize_image.width) // 2,(background_size[1] - resize_image.height) // 2)))
+            else:
+                resize_image = cropped_image.resize_with_aspect_ratio(new_width = int(width_img))
+                result = background.paste_image(resize_image, coordinates=((int(x_init),(background_size[1] - resize_image.height) // 2)))
         else:
-            resized_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
+            cropped_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
             background = background_input
-            result = background.paste_image(resized_image, coordinates=((background_size[0] - resized_image.width) // 2,int(buffer1)))
+            result = background.paste_image(cropped_image, coordinates=((background_size[0] - cropped_image.width) // 2,int(buffer1)))
         return result
 
 # ====================================
