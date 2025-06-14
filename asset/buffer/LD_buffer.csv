@@ -1,4 +1,4 @@
-product,buffer1,buffer2,left_space,width_img
+product,buffer1,buffer2,x_init,width_img
 tv,42,254,0,500
 refrigerator,10,309,0,500
 microwave,49,242,0,500
