@@ -217,7 +217,7 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
     else:
         buffer1 = buffer.loc[buffer['product'] == type_product,'buffer1'].values[0] 
         buffer2 = buffer.loc[buffer['product'] == type_product,'buffer2'].values[0]
-        x_init = buffer.loc[buffer['product'] == type_product,'x_init'].values[0]
+        left_space = buffer.loc[buffer['product'] == type_product,'left_space'].values[0]
         width_img = buffer.loc[buffer['product'] == type_product,'width_img'].values[0]
         # Resize the cropped image
         if type_product == "soundbar":
@@ -230,7 +230,7 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
                 result = background.paste_image(resize_image, coordinates=(((background_size[0] - resize_image.width) // 2,(background_size[1] - resize_image.height) // 2)))
             else:
                 resize_image = cropped_image.resize_with_aspect_ratio(new_width = int(width_img))
-                result = background.paste_image(resize_image, coordinates=((int(x_init),(background_size[1] - resize_image.height) // 2)))
+                result = background.paste_image(resize_image, coordinates=((int(left_space),(background_size[1] - resize_image.height) // 2)))
         else:
             cropped_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
             background = background_input
@@ -253,7 +253,7 @@ def main():
     # st.write(buffer.columns)
     st.sidebar.write("Img_UpperSpace:",buffer.loc[buffer['product'] == type_product,'buffer1'].values[0])
     st.sidebar.write("Img_Height:",buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
-    st.sidebar.write("Img_LeftSpace:",buffer.loc[buffer['product'] == type_product,'x_init'].values[0])
+    st.sidebar.write("Img_LeftSpace:",buffer.loc[buffer['product'] == type_product,'left_space'].values[0])
     st.sidebar.write("Img_Width:",buffer.loc[buffer['product'] == type_product,'width_img'].values[0])
 
     adv_buffer1 = None
@@ -277,7 +277,7 @@ def main():
 
             st.sidebar.write("UPPER SPACE: ",uppermost_y)
             st.sidebar.write("HEIGHT: ",downmost_y-uppermost_y)
-            st.sidebar.write("LEFT: " ,leftmost_x)
+            st.sidebar.write("LEFT SPACE: " ,leftmost_x)
             st.sidebar.write("RIGHT: " ,rightmost_x)
             st.sidebar.write("==================================")
 
