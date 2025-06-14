@@ -278,7 +278,7 @@ def main():
             st.sidebar.write("UPPER SPACE: ",uppermost_y)
             st.sidebar.write("HEIGHT: ",downmost_y-uppermost_y)
             st.sidebar.write("LEFT SPACE: " ,leftmost_x)
-            st.sidebar.write("RIGHT: " ,rightmost_x)
+            st.sidebar.write("WIDTH: " ,rightmost_x-leftmost_x)
             st.sidebar.write("==================================")
 
             
