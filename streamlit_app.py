@@ -272,16 +272,16 @@ def main():
             
             uppermost_y = a.find_uppermost_nonwhite() 
             downmost_y = a.find_downmost_nonwhite()
-            # rightmost_x = a.find_rightmost_nonwhite()
-            # leftmost_x = a.find_leftmost_nonwhite()
+            rightmost_x = a.find_rightmost_nonwhite()
+            leftmost_x = a.find_leftmost_nonwhite()
 
-            st.sidebar.write("UPPER SPACE:",uppermost_y)
-            st.sidebar.write("HEIGHT:",downmost_y-uppermost_y)
+            st.sidebar.write("UPPER SPACE: ",uppermost_y)
+            st.sidebar.write("HEIGHT: ",downmost_y-uppermost_y)
+            st.sidebar.write("LEFT: " ,leftmost_x)
+            st.sidebar.write("RIGHT: " ,rightmost_x)
             st.sidebar.write("==================================")
-            # st.sidebar.write(f"UP: {uppermost_y}")
-            # st.sidebar.write(f"DOWN: {downmost_y}")
-            # st.sidebar.write(f"LEFT: {leftmost_x}")
-            # st.sidebar.write(f"RIGHT: {rightmost_x}")
+
+            
         
 
 # =======================================================================
