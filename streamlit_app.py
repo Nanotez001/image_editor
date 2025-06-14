@@ -239,7 +239,7 @@ def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=Non
 
 # ====================================
 def main():
-    st.title("Batch IMAGE EDITOR v1.44")
+    st.title("Batch IMAGE EDITOR v1.45.1")
     
 
     # Sidebar components
