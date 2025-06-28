@@ -1,395 +1,427 @@
 import streamlit as st
-from PIL import Image
 import pandas as pd
-import requests
-from io import BytesIO
-import io
-import zipfile
 import re
 
-class ImageAnalyzer:
-    def __init__(self, image_input, tolerance=10):
-        # Check if input is a path or a file-like object
-        if isinstance(image_input, str):  # File path
-            self.image = Image.open(image_input).convert("RGB")
-        elif isinstance(image_input, Image.Image):  # Pillow Image object
-            self.image = image_input.convert("RGB")
-        else:  # File-like object (e.g., BytesIO)
-            self.image = Image.open(image_input).convert("RGB")
-        
-        self.pixels = self.image.load()
-        self.width, self.height = self.image.size
-        self.tolerance = tolerance
+def generate_tv_spec_html(spec_text, category_headers_str):
+    """
+    Parses the TV specification text and generates HTML content.
+
+    Args:
+        spec_text (str): The raw text containing TV specifications.
+        category_headers_str (str): A comma-separated string of category headers.
+
+    Returns:
+        str: The generated HTML content as a string.
+    """
+    # 1. Clean and Prepare Lines from spec_text
+    lines = [line.strip() for line in spec_text.strip().split('\n') if line.strip()]
+
+    # 2. Define Category Headers from input string
+    adjusted_category_headers = [h.strip() for h in category_headers_str.split(',') if h.strip()]
+    if not adjusted_category_headers:
+        st.warning("Please provide at least one category header.")
+        return "<p>Error: No category headers provided.</p>"
+
+    # 3. Parsing Logic
+    data_rows = []
+    current_category = None
+    skip_next = False
+
+    for i in range(len(lines)):
+        if skip_next:
+            skip_next = False
+            continue
+
+        line = lines[i].strip()
+        if not line:
+            continue
+
+        if line in adjusted_category_headers:
+            current_category = line
+            continue
+
+        spec_name = line
+        spec_value = ""
+
+        if (i + 1 < len(lines)) and (lines[i+1].strip() not in adjusted_category_headers):
+            spec_value = lines[i+1].strip()
+            skip_next = True
+
+        data_rows.append({"Category": current_category, "Specification": spec_name, "Value": spec_value})
+
+    # Create the DataFrame
+    df = pd.DataFrame(data_rows)
+
+    # Clean up initial "สเปค" and "ย่อ" (if they are still in the headers and parsed)
+    # This part assumes "สเปค" and "ย่อ" are just top-level titles
+    df_cleaned = df[~df['Category'].isin(['สเปค', 'ย่อ'])].copy()
+
+    # Adjust the 'ภาพรวม' entries to avoid duplication
+    # You might want to make this mapping configurable or remove if not desired
+    df_cleaned.loc[df_cleaned['Category'] == 'ภาพรวม', 'Category'] = 'Overall Summary'
+    df_cleaned.loc[(df_cleaned['Category'] == 'Overall Summary') & (df_cleaned['Specification'] == 'Refresh Rate'), 'Specification'] = 'Overall Refresh Rate'
+    df_cleaned.loc[(df_cleaned['Category'] == 'Overall Summary') & (df_cleaned['Specification'] == 'Resolution'), 'Specification'] = 'Overall Resolution'
+    df_cleaned.loc[(df_cleaned['Category'] == 'Overall Summary') & (df_cleaned['Specification'] == 'Video'), 'Specification'] = 'Overall Video Processor'
+    df_cleaned.loc[(df_cleaned['Category'] == 'Overall Summary') & (df_cleaned['Specification'] == 'Design'), 'Specification'] = 'Overall Design Style'
+    df_cleaned.loc[(df_cleaned['Category'] == 'Overall Summary') & (df_cleaned['Specification'] == 'Product Type'), 'Specification'] = 'Overall Product Type'
+
+    # Reset index for clean DataFrame
+    df_cleaned = df_cleaned.reset_index(drop=True)
+
+    # --- HTML Generation ---
+
+    html_head = """
+    <!DOCTYPE html>
+    <html lang="th">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Samsung QLED TV Specifications</title>
+        <style>
+            body {
+                font-family: sans-serif;
+                margin: 20px;
+                background-color: #f9f9f9;
+                color: #333;
+            }
+            .container {
+                max-width: 900px;
+                margin: auto;
+                background: #fff;
+                padding: 20px;
+                border-radius: 12px;
+                box-shadow: 0 0 12px rgba(0,0,0,0.1);
+            }
+            h1 {
+                font-size: 1.8rem;
+                color: #111;
+            }
+            h2 {
+                font-size: 1.4rem;
+                margin-top: 30px;
+                border-bottom: 2px solid #ddd;
+                padding-bottom: 5px;
+            }
+            ul {
+                list-style: disc;
+                padding-left: 20px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 15px;
+            }
+            th, td {
+                padding: 10px;
+                border: 1px solid #ddd;
+                text-align: left;
+            }
+            th {
+                background-color: #f0f0f0;
+            }
+            @media (max-width: 600px) {
+                body { margin: 10px; }
+                .container { padding: 15px; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+    """
+
+    # Product Name (can be made configurable or derived from data)
+    product_name = "Samsung QLED TV Specifications (2025 Model)"
+
+    # Summary List Items (adjust logic as needed)
+    summary_list_items = []
+    # Example: Check if specific specs exist and add to summary
+    if 'Screen Size' in df_cleaned['Specification'].values:
+        size = df_cleaned[df_cleaned['Specification'] == 'Screen Size']['Value'].iloc[0]
+        summary_list_items.append(f"<li>ขนาดหน้าจอ: {size}</li>")
+    if 'Overall Refresh Rate' in df_cleaned['Specification'].values:
+        refresh_rate = df_cleaned[df_cleaned['Specification'] == 'Overall Refresh Rate']['Value'].iloc[0]
+        summary_list_items.append(f"<li>Refresh Rate: {refresh_rate}</li>")
+    if 'Resolution' in df_cleaned['Specification'].values:
+        resolution = df_cleaned[df_cleaned['Specification'] == 'Resolution']['Value'].iloc[0]
+        summary_list_items.append(f"<li>ความละเอียด: {resolution}</li>")
+    if 'Operating System' in df_cleaned['Specification'].values:
+        os = df_cleaned[df_cleaned['Specification'] == 'Operating System']['Value'].iloc[0]
+        summary_list_items.append(f"<li>ระบบปฏิบัติการ: {os}</li>")
+    if 'Product Type' in df_cleaned['Specification'].values:
+        p_type = df_cleaned[df_cleaned['Specification'] == 'Product Type']['Value'].iloc[0]
+        summary_list_items.append(f"<li>ประเภทผลิตภัณฑ์: {p_type}</li>")
+
+    # Start building HTML body content
+    html_body_content = f"<h1>{product_name}</h1>\n"
+
+    if summary_list_items:
+        html_body_content += "    <ul>\n" + "\n".join(summary_list_items) + "\n    </ul>\n"
+
+    # Group data by Category to create tables
+    grouped_data = df_cleaned.groupby('Category')
+
+    for category_name, group in grouped_data:
+        # Skip categories not intended for separate table display or already handled
+        if category_name in ['สเปค', 'ย่อ']:
+            continue
+
+        # Map category names to more readable Thai
+        display_category_name_map = {
+            'Overall Summary': 'ภาพรวม',
+            'Display': 'จอภาพ',
+            'Video': 'ภาพ',
+            'Audio': 'เสียง',
+            'Smart Service': 'บริการสมาร์ททีวี',
+            'Smart Feature': 'คุณสมบัติสมาร์ท',
+            'Game Feature': 'คุณสมบัติสำหรับเล่นเกม',
+            'Tuner/Broadcasting': 'จูนเนอร์/การกระจายเสียง',
+            'Connectivity': 'การเชื่อมต่อ',
+            'Design': 'ดีไซน์',
+            'Additional Feature': 'คุณสมบัติเพิ่มเติม',
+            'Accessibility': 'การเข้าถึง',
+            'Power & Eco Solution': 'พลังงานและโซลูชันประหยัดพลังงาน',
+            'Dimension': 'ขนาด',
+            'Weight': 'น้ำหนัก',
+            'Accessory': 'อุปกรณ์เสริม',
+            # Add more mappings as needed
+        }
+        display_category_name = display_category_name_map.get(category_name, category_name)
 
 
-    def is_almost_white(self, pixel):
-        return all(255 - value <= self.tolerance for value in pixel)
+        html_body_content += f"    <h2>{display_category_name}</h2>\n"
+        html_body_content += "    <table>\n"
 
-    def is_almost_black(self, pixel):
-        return all(value <= self.tolerance for value in pixel)
+        for _, row in group.iterrows():
+            spec = row['Specification']
+            value = row['Value']
 
-    def find_leftmost_nonwhite(self):
-        for x in range(self.width):
-            for y in range(self.height):
-                if not self.is_almost_white(self.pixels[x, y]):  # Check using the tolerance
-                    return x
-        return -1
-
-    def find_uppermost_nonwhite(self):
-        for y in range(self.height):
-            for x in range(self.width):
-                if not self.is_almost_white(self.pixels[x, y]):  # Check using the tolerance
-                    return y
-        return -1
-
-    def find_rightmost_nonwhite(self):
-        for x in range(self.width - 1, -1, -1):
-            for y in range(self.height):
-                if not self.is_almost_white(self.pixels[x, y]):  # Check using the tolerance
-                    return x
-        return -1
-
-    def find_downmost_nonwhite(self):
-        for y in range(self.height - 1, -1, -1):
-            for x in range(self.width):
-                if not self.is_almost_white(self.pixels[x, y]):  # Check using the tolerance
-                    return y
-        return -1
-    # ==================================
-    # def find_leftmost_nonblack(self):
-    #     for x in range(self.width):
-    #         for y in range(self.height):
-    #               if not self.is_almost_black(self.pixels[x, y]):
-    #                 return x
-    #     return -1
-
-    # def find_uppermost_nonblack(self):
-    #     for y in range(self.height):
-    #         for x in range(self.width):
-    #             if not self.is_almost_black(self.pixels[x, y]):  # Check using the tolerance
-    #                 return y
-    #     return -1
-
-    # def find_rightmost_nonblack(self):
-    #     for x in range(self.width - 1, -1, -1):
-    #         for y in range(self.height):
-    #             if not self.is_almost_black(self.pixels[x, y]):  # Check using the tolerance
-    #                 return x
-    #     return -1
-
-    # def find_downmost_nonblack(self):
-    #     for y in range(self.height - 1, -1, -1):
-    #         for x in range(self.width):
-    #             if not self.is_almost_black(self.pixels[x, y]):  # Check using the tolerance
-    #                 return y
-    #     return -1
-    # ==================================
-    def find_rim(self,image_input):
-        a = ImageAnalyzer(image_input)
-        leftmost_x = a.find_leftmost_nonwhite()
-        uppermost_y = a.find_uppermost_nonwhite()
-        rightmost_x = a.find_rightmost_nonwhite()
-        downmost_y = a.find_downmost_nonwhite()
-        # return leftmost_x
-        return leftmost_x,uppermost_y,rightmost_x,downmost_y
-
-    def paste_image(self, overlay_image, coordinates=(0, 0)):
-        overlay_image = overlay_image.convert("RGBA")
-        if coordinates[0] + overlay_image.width > self.image.width or coordinates[1] + overlay_image.height > self.image.height:
-            raise ValueError("Overlay image goes beyond the base image dimensions.")
-        self.image.paste(overlay_image, coordinates, overlay_image)
-        return self.image
-
-    def layout_images(self, image_paths, layout="horizontal"):
-        images = [Image.open(path).convert("RGB") for path in image_paths]
-        widths, heights = zip(*(img.size for img in images))
-
-        if layout == "horizontal":
-            total_width = sum(widths)
-            max_height = max(heights)
-            new_img = Image.new("RGB", (total_width, max_height), (255, 255, 255))
-            x_offset = 0
-            for img in images:
-                new_img.paste(img, (x_offset, 0))
-                x_offset += img.width
-        elif layout == "vertical":
-            total_height = sum(heights)
-            max_width = max(widths)
-            new_img = Image.new("RGB", (max_width, total_height), (255, 255, 255))
-            y_offset = 0
-            for img in images:
-                new_img.paste(img, (0, y_offset))
-                y_offset += img.height
-        else:
-            raise ValueError("Invalid layout type. Choose 'horizontal' or 'vertical'.")
-
-        return new_img
-
-    def merge_images(self, image1_path, image2_path, alpha=0.5):
-        img1 = Image.open(image1_path).convert("RGBA")
-        img2 = Image.open(image2_path).convert("RGBA")
-        if img1.size != img2.size:
-            img2 = img2.resize(img1.size)
-        return Image.blend(img1, img2, alpha)
-
-    def crop(self, left, upper, right, lower):
-        # Validate crop dimensions
-        if left < 0 or upper < 0 or right > self.width or lower > self.height:
-            raise ValueError("Crop coordinates are out of image bounds.")
-        if left >= right or upper >= lower:
-            raise ValueError("Invalid crop dimensions. Ensure left < right and upper < lower.")
-        
-        # Perform the cropping
-        cropped_image = self.image.crop((left, upper, right, lower))
-        return cropped_image
-    def resize_with_aspect_ratio(self, new_width=None, new_height=None):
-        if new_width is None and new_height is None:
-            raise ValueError("At least one of new_width or new_height must be specified.")
-
-        # Calculate the aspect ratio of the image
-        aspect_ratio = self.width / self.height
-
-        if new_width is not None:
-            # Calculate new height while maintaining aspect ratio
-            new_height = int(new_width / aspect_ratio)
-        elif new_height is not None:
-            # Calculate new width while maintaining aspect ratio
-            new_width = int(new_height * aspect_ratio)
-
-        # Resize the image
-        resized_image = self.image.resize((new_width, new_height))
-        return resized_image
-
-    def thumbnail(self, coordinate):
-        self.image.thumbnail(coordinate)
-        return self.image
-
-
-def importfromGit(image_url):
-
-    # Send a GET request to fetch the raw image
-    response = requests.get(image_url)
-
-    # Check if the request was successful (status code 200)
-    if response.status_code == 200:
-        # Open the image from the response content
-        img = Image.open(BytesIO(response.content))
-        return img
-    else:
-        return print("Failed to retrieve the image. Status code:", response.status_code)
-
-def Edit_001(main_input, platform, type_product,advanced_setting,adv_buffer1=None,adv_buffer2=None):
-    product_input = ImageAnalyzer(main_input)
-
-    # Select platform and buffer data
-    if platform == "LD":
-        background_input = ImageAnalyzer(importfromGit("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/temp/Temp_525x338.jpg"))
-        background_size = [525, 338]
-        buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/LD_buffer.csv")
-    elif platform == "JJT":
-        background_input = ImageAnalyzer(importfromGit("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/temp/Temp_1000x1000.jpg"))
-        background_size = [1000, 1000]
-        buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/JJT_buffer.csv")
-
-    # Get non-white pixel boundaries
-    leftmost_x = product_input.find_leftmost_nonwhite()
-    uppermost_y = product_input.find_uppermost_nonwhite()
-    rightmost_x = product_input.find_rightmost_nonwhite()
-    downmost_y = product_input.find_downmost_nonwhite()
-
-    # Crop and save the image
-    cropped_image = product_input.crop(leftmost_x, uppermost_y, rightmost_x, downmost_y)
-
-    # st.write("CHECK2")
-    # st.write(buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
-    # st.write(buffer)
-    if advanced_setting:
-        buffer1 = adv_buffer1
-        buffer2 = adv_buffer2
-        # Resize the cropped image
-        cropped_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
-        # resized_image.save(resized_path)
-        # st.write("CHECK3")
-        # Overlay the resized image onto the background
-        background = background_input
-        result = background.paste_image(cropped_image, coordinates=((background_size[0] - cropped_image.width) // 2,int(buffer1)))
-        return result
-    else:
-        buffer1 = buffer.loc[buffer['product'] == type_product,'buffer1'].values[0] 
-        buffer2 = buffer.loc[buffer['product'] == type_product,'buffer2'].values[0]
-        x_init = buffer.loc[buffer['product'] == type_product,'x_init'].values[0]
-        width_img = buffer.loc[buffer['product'] == type_product,'width_img'].values[0]
-        # Resize the cropped image
-        if type_product == "soundbar":
-            cropped_image = ImageAnalyzer(cropped_image)
-            background = background_input
-             # Check if resized_image is larger than background
-            if cropped_image.width > background.width or cropped_image.height > background.height:
-            
-                resize_image = cropped_image.thumbnail((479, 292))
-                result = background.paste_image(resize_image, coordinates=(((background_size[0] - resize_image.width) // 2,(background_size[1] - resize_image.height) // 2)))
+            # Handle empty values for "Yes" or "Support"
+            if value == "Yes":
+                display_value = "มี"
+            elif value == "Support":
+                display_value = "รองรับ"
+            elif value == "":
+                display_value = "-"
             else:
-                resize_image = cropped_image.resize_with_aspect_ratio(new_width = int(width_img))
-                result = background.paste_image(resize_image, coordinates=((int(x_init),(background_size[1] - resize_image.height) // 2)))
-        else:
-            cropped_image = ImageAnalyzer(cropped_image).resize_with_aspect_ratio(new_height=int(buffer2))
-            background = background_input
-            result = background.paste_image(cropped_image, coordinates=((background_size[0] - cropped_image.width) // 2,int(buffer1)))
-        return result
+                display_value = value
 
-# ====================================
-def main():
-    st.title("Batch IMAGE EDITOR v1.45.1")
-    
+            html_body_content += f"        <tr><th>{spec}</th><td>{display_value}</td></tr>\n"
+        html_body_content += "    </table>\n"
 
-    # Sidebar components
-    st.sidebar.title("Select Options")
-    platform = st.sidebar.selectbox("Platform:", ["LD", "JJT"])
-    type_product = st.sidebar.selectbox("Type:", ["tv", "refrigerator", "microwave", "(ฝาหน้า)washingmachine","soundbar"])
-    if platform == "LD":
-        buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/LD_buffer.csv")
-    elif platform == "JJT":
-        buffer = pd.read_csv("https://raw.githubusercontent.com/Nanotez001/image_editor/refs/heads/main/asset/buffer/JJT_buffer.csv")
-    # st.write(buffer.columns)
-    st.sidebar.write("Img_UpperSpace:",buffer.loc[buffer['product'] == type_product,'buffer1'].values[0])
-    st.sidebar.write("Img_Height:",buffer.loc[buffer['product'] == type_product,'buffer2'].values[0])
-    st.sidebar.write("Img_LeftSpace:",buffer.loc[buffer['product'] == type_product,'x_init'].values[0])
-    st.sidebar.write("Img_Width:",buffer.loc[buffer['product'] == type_product,'width_img'].values[0])
+    html_footer = """
+        </div>
+    </body>
+    </html>
+    """
 
-    adv_buffer1 = None
-    adv_buffer2 = None
-    advanced_setting = st.sidebar.checkbox("Advanced Setting & Ref Check")
-    if advanced_setting:
-        # st.write("The switch is ON!")
-        adv_buffer1 = st.sidebar.slider("Img_UpperSpace",value=100,min_value=1,max_value=500)
-        adv_buffer2 = st.sidebar.slider("Img_Height",value=150,min_value=1,max_value=900)
+    full_html_content = html_head + html_body_content + html_footer
+    return full_html_content
 
-        st.sidebar.title("Upload Ref Files")
-        check_file = st.sidebar.file_uploader("ใช้เพื่อดู Layout เท่านั้น ไม่ได้ปรับขนาด", type=["jpg", "jpeg","png"], accept_multiple_files=False)
-        if check_file:
-            st.sidebar.image(check_file)
-            a = ImageAnalyzer(check_file)
-            
-            uppermost_y = a.find_uppermost_nonwhite() 
-            downmost_y = a.find_downmost_nonwhite()
-            rightmost_x = a.find_rightmost_nonwhite()
-            leftmost_x = a.find_leftmost_nonwhite()
+# --- Streamlit UI ---
+st.set_page_config(layout="wide", page_title="TV Spec HTML Generator")
 
-            st.sidebar.write("UPPER SPACE: ",uppermost_y)
-            st.sidebar.write("HEIGHT: ",downmost_y-uppermost_y)
-            st.sidebar.write("LEFT SPACE: " ,leftmost_x)
-            st.sidebar.write("WIDTH: " ,rightmost_x-leftmost_x)
-            st.sidebar.write("==================================")
+st.title("TV Specification to HTML Converter")
 
-            
-# =======================================================================
-    # Main Columns
-    uploaded_files = st.file_uploader("Upload JPG Files (คำแนะนำ แก้ไขชื่อไฟล์ให้เรียบร้อยก่อน)", type=["jpg", "jpeg","png"], accept_multiple_files=True)
+st.write("วางข้อความสเปคทีวีของคุณที่นี่:")
+# Default spec text for convenience
+default_spec_text = """
+สเปค
+ย่อ
+ภาพรวม
+Refresh Rate
+Up to 60Hz
+Resolution
+4K (3,840 x 2,160)
+Video
+Q4 Lite Processor
+Design
+Metal Stream
+Product Type
+QLED
+Display
+Screen Size
+85"
+Refresh Rate
+Up to 60Hz
+Resolution
+4K (3,840 x 2,160)
+Video
+Picture Engine
+Q4 Lite Processor
+HDR (High Dynamic Range)
+Quantum HDR
+HDR 10+
+Support
+AI Upscale
+4K Upscaling
+Contrast
+Mega Contrast
+Micro Dimming
+UHD Dimming
+Contrast Enhancer
+Yes
+Motion Technology
+Motion Xcelerator
+Filmmaker Mode (FMM)
+Yes
+Color Booster
+Yes
+Audio
+Object Tracking Sound
+OTS Lite
+Q-Symphony
+Yes
+Sound Output (RMS)
+20W
+Speaker Type
+2CH
+Adaptive Sound
+Yes
+Smart Service
+Operating System
+Tizen™ Smart TV
+Bixby
+Yes
+Samsung TV Plus
+Yes
+Web Browser
+Yes
+SmartThings Hub / Matter Hub / IoT-Sensor Functionality / Quick Remote
+Yes
+Smart Feature
+Multi Device Experience
+Mobile to TV, Sound Mirroring, Wireless TV On
+Apple AirPlay
+Yes
+Daily+
+Yes
+Storage Share
+Yes
+Game Feature
+Auto Game Mode (ALLM)
+Yes
+VRR
+Yes
+HGiG
+Yes
+Tuner/Broadcasting
+Digital Broadcasting
+DVB-T2
+Analog Tuner
+Yes
+TV Key Support
+Yes
+Connectivity
+HDMI
+3
+USB
+1 x USB-A
+HDMI (High Frame Rate)
+4K 60Hz (for HDMI 1/2/3)
+Ethernet (LAN)
+1
+RF In (Terrestrial / Cable input)
+1/1(Common Use for Terrestrial)/0
+Wi-Fi
+Yes (Wi-Fi 5)
+Bluetooth
+Yes(5.3)
+Anynet+ (HDMI-CEC)
+Yes
+HDMI Audio Return Channel
+eARC/ARC
+Design
+Design
+Metal Stream
+Bezel Type
+3 Bezel-less
+Front Color
+BLACK
+Stand Type
+BASIC FEET
+Stand Color
+TITAN GRAY
+Additional Feature
+Embeded POP
+Yes
+EPG
+Yes
+IP Control
+Yes
+OSD Language
+Local Languages
+Accessibility
+Accessibillity - Voice Guide
+Chinese (China),English (UK),French (France),German (Germany),Hindi (India),Indonesian (Indonesia),Italian (Italy),Korean (Korea),Malay (Malaysia),Portuguese (Portugal),Russian (Russia),Spanish (Spain),Thai (Thailand),Vietnamese (Vietnam)
+Low Vision Support
+Audio Description, Zoom Menu and Text, High Contrast, SeeColors, Color Inversion, Grayscale, Auto Picture Off
+Hearing Impaired Support
+Closed Caption (Subtitle), Multi-output Audio, Sign Language Zoom
+Motor Impaired Support
+Slow Button Repeat, Remote Control App. for All
+Power & Eco Solution
+Eco Sensor
+Yes
+Power Supply
+AC100-240V~ 50/60Hz
+Power Consumption (Max)
+280 W
+Auto Power Off
+Yes
+Auto Power Saving
+Yes
+Dimension
+Package Size (WxHxD)
+2075 x 1200 x 171 mm
+Set Size with Stand (WxHxD)
+1889.9 x 1132.8 x 326 mm
+Set Size without Stand (WxHxD)
+1889.9 x 1083.5 x 77 mm
+Stand (Basic) (WxD)
+1411 x 326 mm
+Stand (Minimum) (WxD)
+954 x 326 mm
+VESA Spec
+400 x 300 mm
+Weight
+Package Weight
+40.7 kg
+Set Weight with Stand
+29.2 kg
+Set Weight without Stand
+28.7 kg
+Accessory
+Remote Controller Model
+TM2360E
+User Manual
+Yes
+Full Motion Slim Wall Mount (Y22)
+Yes
+Webcam Support
+Yes
+Zigbee / Thread Module
+Dongle Support
+Power Cable
+Yes
+"""
 
-    if uploaded_files:
-        # Process each uploaded file
-        result_images=[]
-        original_name=[]
-        for i, uploaded_file in enumerate(uploaded_files):
-            try:
-                # Remove file extension
-                name_without_ext = uploaded_file.name.replace('.jpg', '').replace('.png', '').replace('.jpeg', '').replace("LuckyDigital",'').replace("Jingjungto",'')
+spec_text_input = st.text_area("ข้อความสเปคทีวี:", default_spec_text, height=400)
 
-                # Remove any (number) patterns
-                name_cleaned = re.sub(r'\(\d+\)', '', name_without_ext)
+st.write("ป้อนหัวข้อหมวดหมู่ที่ปรับแล้ว คั่นด้วยคอมมา (ตัวอย่าง: สเปค, ย่อ, ภาพรวม, Display):")
+default_headers = "สเปค, ย่อ, ภาพรวม, Display, Video, Audio, Smart Service, Smart Feature, Game Feature, Tuner/Broadcasting, Connectivity, Design, Additional Feature, Accessibility, Power & Eco Solution, Dimension, Weight, Accessory"
+category_headers_input = st.text_input("หัวข้อหมวดหมู่:", default_headers)
 
-                # Optional: Strip leading/trailing spaces
-                name_cleaned = name_cleaned.strip()
+if st.button("สร้าง HTML"):
+    if spec_text_input and category_headers_input:
+        generated_html = generate_tv_spec_html(spec_text_input, category_headers_input)
 
-                original_name.append(name_cleaned)
+        st.subheader("HTML Code Output:")
+        st.code(generated_html, language="html")
 
-                # Open and convert the uploaded image
-                png_image = Image.open(uploaded_file).convert("RGBA")
-
-                # Create a white background image
-                white_background = Image.new("RGB", png_image.size, (255, 255, 255))
-
-                # Combine the PNG with the white background (handle transparency)
-                white_background.paste(png_image, mask=png_image.split()[3])
-
-                # Process the result
-                result = Edit_001(white_background, platform, type_product, advanced_setting, adv_buffer1, adv_buffer2)
-
-                # Append the result to the results list
-                result_images.append(result)
-
-            except Exception as e:
-                st.error(f"Error processing the image '{uploaded_file.name}': {e}")
-
-                # result_images.append(result)
-            # Display the before and after images
-            col1, col2,col3 = st.columns(3)
-            with col1:
-                st.image(white_background, caption="Before", use_container_width=True)
-
-            with col2:
-                # result_image_path = "C:/Users/LEGION by Lenovo/Desktop/Image_Editor/Result_Test.jpg"
-                st.image(result, caption="After", use_container_width=True)
-            with col3:
-                # Save result as JPEG to in-memory buffer
-                img_bytes = io.BytesIO()
-                result.save(img_bytes, format="JPEG")
-                
-                if platform == "LD":
-                    platform_fullname = "LuckyDigital"
-                elif platform == "JJT":
-                    platform_fullname = "Jingjungto"
-                img_bytes.seek(0)
-                # Download button for the individual image
-                st.download_button(
-                    label=f"Download",
-                    data=img_bytes,
-                    file_name=f"{name_cleaned}_{platform_fullname}_{i+1}.jpg",
-                    mime="image/jpeg"
-    )
-    
-
-
-
-        # save_folder_path = st.text_input(label="Enter your FOLDER address:",placeholder="EX. C:\\Users\\LEGION by Lenovo\\Desktop\\Result\\ ")
-        # if st.button(label = "save"): 
-        #     i=0
-        #     for image in result_images:
-        #         save_path = f"{save_folder_path}/{original_name[i]}"
-        #         i+=1     
-        #         image.save(save_path)
-
-        # Download button to download the image
-        if result_images:
-            # Create a BytesIO object for the ZIP file
-            zip_buffer = io.BytesIO()
-            
-            with zipfile.ZipFile(zip_buffer, "w") as zip_file:
-                for i, image in enumerate(result_images):
-                    try:
-                        img_bytes = io.BytesIO()
-                        image.save(img_bytes, format="JPEG")
-                        img_bytes.seek(0)
-                    except Exception as e:
-                        st.error(f"Error saving image {original_name[i]}: {e}")
-                        continue  # Skip corrupted image
-                    if platform == "LD":
-                        zip_file.writestr(f"{original_name[i]}_LuckyDigital.jpg", img_bytes.read())
-                    elif platform == "JJT":
-                        zip_file.writestr(f"{original_name[i]}_Jingjungto.jpg", img_bytes.read())
-
-            zip_buffer.seek(0)
-                
-            # Add a single download button for all images as a ZIP file
-            st.download_button(
-                label="Download ALL Images as ZIP",
-                data=zip_buffer,
-                file_name="Result_Images.zip",
-                mime="application/zip",
-                )
+        st.subheader("HTML Preview:")
+        # Use st.components.v1.html for rendering full HTML documents
+        # This isolates the HTML, preventing potential conflicts with Streamlit's styling
+        st.components.v1.html(generated_html, height=800, scrolling=True)
     else:
-        st.info("Please upload at least one image to proceed.")
+        st.warning("โปรดใส่ข้อความสเปคและหัวข้อหมวดหมู่")
 
-# Run the app
-if __name__ == "__main__":
-    main()
