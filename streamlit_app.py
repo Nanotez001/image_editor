@@ -8,7 +8,7 @@ import zipfile
 import re
 
 class ImageAnalyzer:
-    def __init__(self, image_input, tolerance=10):
+    def __init__(self, image_input, tolerance=50):
         # Check if input is a path or a file-like object
         if isinstance(image_input, str):  # File path
             self.image = Image.open(image_input).convert("RGB")
