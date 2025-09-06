@@ -7,6 +7,12 @@ import io
 import zipfile
 import re
 
+st.set_page_config(
+    page_title="Image Editor",   
+    page_icon="🖼️",                  
+    layout="wide"
+)
+
 class ImageAnalyzer:
     def __init__(self, image_input, tolerance=50):
         # Check if input is a path or a file-like object
